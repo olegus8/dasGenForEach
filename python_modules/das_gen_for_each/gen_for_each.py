@@ -2,8 +2,8 @@ import logging
 import argparse
 import sys
 from os import path
-from das.shared.object_base import LoggingObject
-from das.shared.op_sys import full_path, run_exec, write_to_file
+from das_shared.object_base import LoggingObject
+from das_shared.op_sys import full_path, run_exec, write_to_file
 
 
 APP_NAME = 'dasGenForEach'
