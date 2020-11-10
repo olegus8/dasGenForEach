@@ -4,7 +4,7 @@ IF(NOT DAS_GEN_FOR_EACH_INCLUDED)
 
     find_package(Python3)
 
-    SET(DAS_GEN_FOR_EACH_DIR ${PROJECT_SOURCE_DIR}/modules/dasGenForEach)
+    SET(DAS_GEN_FOR_EACH_DIR ${CMAKE_SOURCE_DIR}/modules/dasGenForEach)
     SET(DAS_GEN_FOR_EACH_PY_DIR ${DAS_GEN_FOR_EACH_DIR}/python_modules/das_gen_for_each)
 
     SET(DAS_GEN_FOR_EACH_SRC
