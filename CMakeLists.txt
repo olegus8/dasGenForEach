@@ -1,5 +1,5 @@
-IF(NOT DAS_GEN_FOR_EACH_FOUND)
-    SET(DAS_GEN_FOR_EACH_FOUND TRUE)
+IF(NOT DAS_GEN_FOR_EACH_INCLUDED)
+    SET(DAS_GEN_FOR_EACH_INCLUDED TRUE)
 
     find_package(Python3)
 
@@ -17,7 +17,7 @@ IF(NOT DAS_GEN_FOR_EACH_FOUND)
 
     MACRO(DAS_GEN_FOR_EACH write_to max_args)
         IF(NOT Python3_FOUND)
-            MESSAGE(STATUS "Prerequisites for dasGenForEach not found. Pre-generated files will be used.")
+            MESSAGE(STATUS "Prerequisites for dasGenForEach not found. Pre-generated ${write_to} will be used.")
         ELSE()
             ADD_CUSTOM_COMMAND(
                 DEPENDS ${DAS_GEN_FOR_EACH_SRC} ${DAS_GEN_FOR_EACH_SHARED_SRC}
