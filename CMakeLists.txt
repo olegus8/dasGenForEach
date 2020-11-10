@@ -1,4 +1,5 @@
 IF(NOT DAS_GEN_FOR_EACH_INCLUDED)
+    MESSAGE(STATUS "dasGenForEach module included.")
     SET(DAS_GEN_FOR_EACH_INCLUDED TRUE)
 
     find_package(Python3)
