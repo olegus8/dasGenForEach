@@ -129,7 +129,7 @@ class GenForEach(LoggingObject):
             for i in range(index_min, index_max+1)
         ]
 
-    def __generate_for_each_arg_n(self, indices):
+    def __generate_for_each_arg_n(self, max_args):
         lines = []
         lines += [
             '#define DAS_FOR_EACH_ARG_N( \\',
