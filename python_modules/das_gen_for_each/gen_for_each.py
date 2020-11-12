@@ -135,7 +135,7 @@ class GenForEach(LoggingObject):
             '#define DAS_FOR_EACH_ARG_N( \\',
         ]
         lines += [
-            '    {} \\'.format(''.join(f'_{i+1}, '
+            '    {}\\'.format(''.join(f'_{i+1}, '
                 for i in range(max_args))),
         ]
         lines +=  [
