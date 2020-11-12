@@ -7,6 +7,7 @@ from das_shared.op_sys import full_path, run_exec, write_to_file
 
 
 APP_NAME = 'dasGenForEach'
+MAX_MSVC_INDICES = 125
 
 
 class GenForEachError(Exception):
@@ -72,10 +73,21 @@ class GenForEach(LoggingObject):
             '#define DAS_EXPAND(x) x',
             '#define  DAS_FOR_EACH_1(WHAT, ARG, X) WHAT(X, ARG)',
         ]
-        lines += [
-           f'#define DAS_FOR_EACH_{i+2}(WHAT, ARG, X, ...) WHAT(X, ARG) DAS_EXPAND(DAS_FOR_EACH_{i+1}(WHAT, ARG, __VA_ARGS__))'
-            for i in range(max_args-1)
-        ]
+        lines += self.__generate_for_each_n(
+            index_min=2, index_max=min(MAX_MSVC_INDICES, max_args))
+        if max_args > MAX_MSVC_INDICES:
+            lines += [
+                '',
+                '#ifndef _MSC_VER',
+                '',
+            ]
+            lines += self.__generate_for_each_n(
+                index_min=MAX_MSVC_INDICES + 1, max_args)
+            lines += [
+                '',
+                '#endif',
+                '',
+            ]
         lines += [
             '#define DAS_FOR_EACH_NARG(...) DAS_FOR_EACH_NARG_(__VA_ARGS__, DAS_FOR_EACH_RSEQ_N())',
             '#define DAS_FOR_EACH_NARG_(...) DAS_EXPAND(DAS_FOR_EACH_ARG_N(__VA_ARGS__))',
@@ -98,3 +110,9 @@ class GenForEach(LoggingObject):
             '#define DAS_FOR_EACH(what, arg, ...) DAS_FOR_EACH_(DAS_FOR_EACH_NARG(__VA_ARGS__), what, arg, __VA_ARGS__)',
         ]
         return lines
+
+    def __generate_for_each_n(self, index_min, index_max):
+        return [
+           f'#define DAS_FOR_EACH_{i}(WHAT, ARG, X, ...) WHAT(X, ARG) DAS_EXPAND(DAS_FOR_EACH_{i-1}(WHAT, ARG, __VA_ARGS__))'
+            for i in range(index_min, index_max)
+        ]
