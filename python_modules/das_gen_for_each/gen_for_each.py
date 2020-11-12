@@ -7,6 +7,7 @@ from das_shared.op_sys import full_path, run_exec, write_to_file
 
 
 APP_NAME = 'dasGenForEach'
+MAX_MSvC_ARGS = 125
 
 
 class GenForEachError(Exception):
@@ -72,29 +73,83 @@ class GenForEach(LoggingObject):
             '#define DAS_EXPAND(x) x',
             '#define  DAS_FOR_EACH_1(WHAT, ARG, X) WHAT(X, ARG)',
         ]
-        lines += [
-           f'#define DAS_FOR_EACH_{i+2}(WHAT, ARG, X, ...) WHAT(X, ARG) DAS_EXPAND(DAS_FOR_EACH_{i+1}(WHAT, ARG, __VA_ARGS__))'
-            for i in range(max_args-1)
-        ]
+        lines += self.__generate_for_each_n(
+            index_min=2, index_max=min(MAX_MSvC_ARGS, max_args))
+        if max_args > MAX_MSvC_ARGS:
+            lines += [
+                '',
+                '#ifndef _MSC_VER',
+                '',
+            ]
+            lines += self.__generate_for_each_n(
+                index_min=MAX_MSvC_ARGS + 1, index_max=max_args)
+            lines += [
+                '',
+                '#endif',
+                '',
+            ]
         lines += [
             '#define DAS_FOR_EACH_NARG(...) DAS_FOR_EACH_NARG_(__VA_ARGS__, DAS_FOR_EACH_RSEQ_N())',
             '#define DAS_FOR_EACH_NARG_(...) DAS_EXPAND(DAS_FOR_EACH_ARG_N(__VA_ARGS__))',
-            '#define DAS_FOR_EACH_ARG_N( \\',
         ]
+
         lines += [
-            '    {} \\'.format(''.join(f'_{i+1}, ' for i in range(max_args))),
+            '',
+            '#ifndef _MSC_VER',
+            '',
         ]
-        lines +=  [
-            '    N, ...) N',
-            '#define DAS_FOR_EACH_RSEQ_N() \\',
-        ]
+        lines += self.__generate_for_each_arg_n(
+            max_args=max_args)
+        lines += self.__generate_for_each_rseq_n(
+            max_args=max_args)
         lines += [
-            '    {}'.format(', '.join(
-                f'{max_args-i}' for i in range(max_args+1))),
+            '',
+            '#else',
+            '',
+        ]
+        lines += self.__generate_for_each_arg_n(
+            max_args=min(MAX_MSvC_ARGS, max_args))
+        lines += self.__generate_for_each_rseq_n(
+            max_args=min(MAX_MSvC_ARGS, max_args))
+        lines += [
+            '',
+            '#endif',
+            '',
         ]
         lines += [
             '#define CONCATENATE(x,y) x##y',
             '#define DAS_FOR_EACH_(N, what, arg, ...) DAS_EXPAND(CONCATENATE(DAS_FOR_EACH_, N)(what, arg, __VA_ARGS__))',
             '#define DAS_FOR_EACH(what, arg, ...) DAS_FOR_EACH_(DAS_FOR_EACH_NARG(__VA_ARGS__), what, arg, __VA_ARGS__)',
+        ]
+        return lines
+
+    def __generate_for_each_n(self, index_min, index_max):
+        return [
+           f'#define DAS_FOR_EACH_{i}(WHAT, ARG, X, ...) WHAT(X, ARG) DAS_EXPAND(DAS_FOR_EACH_{i-1}(WHAT, ARG, __VA_ARGS__))'
+            for i in range(index_min, index_max+1)
+        ]
+
+    def __generate_for_each_arg_n(self, max_args):
+        lines = []
+        lines += [
+            '#define DAS_FOR_EACH_ARG_N( \\',
+        ]
+        lines += [
+            '    {}\\'.format(''.join(f'_{i+1}, '
+                for i in range(max_args))),
+        ]
+        lines +=  [
+            '    N, ...) N',
+        ]
+        return lines
+
+    def __generate_for_each_rseq_n(self, max_args):
+        lines = []
+        lines += [
+            '#define DAS_FOR_EACH_RSEQ_N() \\',
+        ]
+        lines += [
+            '    {}'.format(', '.join(
+                f'{max_args-i}' for i in range(max_args+1))),
         ]
         return lines
