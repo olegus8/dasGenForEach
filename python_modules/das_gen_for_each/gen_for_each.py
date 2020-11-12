@@ -82,7 +82,7 @@ class GenForEach(LoggingObject):
                 '',
             ]
             lines += self.__generate_for_each_n(
-                index_min=MAX_MSvC_ARGS + 1, max_args)
+                index_min=MAX_MSvC_ARGS + 1, index_max=max_args)
             lines += [
                 '',
                 '#endif',
