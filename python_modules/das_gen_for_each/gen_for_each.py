@@ -91,6 +91,8 @@ class GenForEach(LoggingObject):
         lines += [
             '#define DAS_FOR_EACH_NARG(...) DAS_FOR_EACH_NARG_(__VA_ARGS__, DAS_FOR_EACH_RSEQ_N())',
             '#define DAS_FOR_EACH_NARG_(...) DAS_EXPAND(DAS_FOR_EACH_ARG_N(__VA_ARGS__))',
+        ]
+        lines += [
             '#define DAS_FOR_EACH_ARG_N( \\',
         ]
         lines += [
@@ -98,6 +100,8 @@ class GenForEach(LoggingObject):
         ]
         lines +=  [
             '    N, ...) N',
+        ]
+        lines += [
             '#define DAS_FOR_EACH_RSEQ_N() \\',
         ]
         lines += [
@@ -114,5 +118,19 @@ class GenForEach(LoggingObject):
     def __generate_for_each_n(self, index_min, index_max):
         return [
            f'#define DAS_FOR_EACH_{i}(WHAT, ARG, X, ...) WHAT(X, ARG) DAS_EXPAND(DAS_FOR_EACH_{i-1}(WHAT, ARG, __VA_ARGS__))'
-            for i in range(index_min, index_max)
+            for i in range(index_min, index_max+1)
         ]
+
+    def __generate_for_each_arg_n(self, index_min, index_max):
+        lines = []
+        lines += [
+            '#define DAS_FOR_EACH_ARG_N( \\',
+        ]
+        lines += [
+            '    {} \\'.format(''.join(f'_{i+1}, '
+                for i in range(index_min, index_max+1))),
+        ]
+        lines +=  [
+            '    N, ...) N',
+        ]
+        return lines
